@@ -13,6 +13,19 @@ Resources:
         - Key: "Name"
           Value: "3-tier-app-vpc"
 
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-ig"
+
+  VpcIGAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref Vpc
+
 Outputs:
   VpcId:
     Value: !GetAtt Vpc.VpcId
