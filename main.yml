@@ -51,6 +51,34 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "3-tier-app-public-app-subnet-2"
+  
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-public-rt"
+  
+  InternetGatewayRoute:
+    DependsOn: VpcIGAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  
+  PublicAppSubnetsRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref  PublicAppSubnet1
+
+  PublicAppSubnetsRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref  PublicAppSubnet2
 
 Outputs:
   VpcId:
