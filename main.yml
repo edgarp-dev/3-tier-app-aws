@@ -128,6 +128,58 @@ Resources:
         - Key: "Name"
           Value: "3-tier-app-private-database-subnet-2"
 
+  NatElasticIp:
+    Type: AWS::EC2::EIP
+  
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatElasticIp.AllocationId
+      ConnectivityType: "public"
+      SubnetId: !Ref PublicAppSubnet1
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-nat-gateway"
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-private-route-table"
+
+  NatGatewayRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+  
+  PrivateMiddlewareRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateMiddlewareSubnet1
+
+  PrivateMiddlewareRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateMiddlewareSubnet2
+
+  PrivateDatabaseRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateDatabaseSubnet1
+
+  PrivateDatabaseRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateDatabaseSubnet2
+
 Outputs:
   VpcId:
     Value: !GetAtt Vpc.VpcId
