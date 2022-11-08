@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: AWS 3 Tier Application
 
 Resources:
+  ######### CORE #########
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -179,6 +180,8 @@ Resources:
     Properties:
       RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateDatabaseSubnet2
+  
+  ######### WEB APP LOAD BALANCER #########
 
 Outputs:
   VpcId:
