@@ -261,7 +261,7 @@ Resources:
             sudo yum install -y httpd
             sudo systemctl start httpd
             sudo systemctl enable httpd
-            echo "Hello World :D" | sudo tee /var/www/html/index.html
+            echo "Hello World From Application Tier :D" | sudo tee /var/www/html/index.html
         TagSpecifications:
           - ResourceType: instance
             Tags:
@@ -291,6 +291,113 @@ Resources:
           PropagateAtLaunch: true
 
 ######### MIDDLEWARE TIER #########
+  MiddlewareLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref Vpc
+      GroupDescription: "Middleware Load Balancer Security Group"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !Ref WebInstanceSecurityGroup
+          FromPort: 80
+          ToPort: 80
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-middleware-tier-sg"
+
+  MiddlewareElasticLoadBalancer:
+    DependsOn: VpcIGAttachment
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Type: application
+      Scheme: internal
+      SecurityGroups:
+        - !Ref MiddlewareLoadBalancerSecurityGroup
+      Subnets:
+        - !Ref PrivateMiddlewareSubnet1
+        - !Ref PrivateMiddlewareSubnet2
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-middleware-tier-load-balancer"
+  
+  MiddlewareTierTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-middleware-tier-target-group"
+
+  MiddlewareTierLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref MiddlewareElasticLoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: "forward"
+          TargetGroupArn: !Ref MiddlewareTierTargetGroup
+  
+  MiddlewareInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref Vpc
+      GroupDescription: "Middleware Instance Secutiry Group"
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          SourceSecurityGroupId: !Ref MiddlewareLoadBalancerSecurityGroup
+          FromPort: 80
+          ToPort: 80
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-middleware-instance-sg"
+    
+  MiddlewareInstanceLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        ImageId: "ami-09d3b3274b6c5d4aa"
+        InstanceType: t2.micro
+        KeyName: 3TierAppKey
+        SecurityGroupIds:
+          - !Ref MiddlewareInstanceSecurityGroup
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            sudo yum update -y
+            sudo yum install -y httpd
+            sudo systemctl start httpd
+            sudo systemctl enable httpd
+            echo "Hello World From Middleware Tier :D" | sudo tee /var/www/html/index.html
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: "Name"
+                Value: "3-tier-app-middleware-tier-launch-template"
+  
+  MiddlewareTierAutoScalingGroup:
+    DependsOn:
+      - VpcIGAttachment
+      - MiddlewareTierLoadBalancerListener
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MaxSize: "2"
+      MinSize: "1"
+      DesiredCapacity: "2"
+      VPCZoneIdentifier:
+        - !Ref PrivateMiddlewareSubnet1
+        - !Ref PrivateMiddlewareSubnet2
+      LaunchTemplate:
+        LaunchTemplateId: !Ref MiddlewareInstanceLaunchTemplate
+        Version: "1"
+      TargetGroupARNs:
+        - !Ref MiddlewareTierTargetGroup
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-middleware-tier-auto-scaling-group"
+          PropagateAtLaunch: true
 
 Outputs:
   VpcId:
