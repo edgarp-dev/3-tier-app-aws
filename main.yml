@@ -181,7 +181,7 @@ Resources:
       RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateDatabaseSubnet2
 
-  ######### WEB APP LOAD BALANCER #########
+  ######### APPLICATION TIER #########
   WebTierLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -289,6 +289,8 @@ Resources:
         - Key: "Name"
           Value: "3-tier-app-web-tier-auto-scaling-group"
           PropagateAtLaunch: true
+
+######### MIDDLEWARE TIER #########
 
 Outputs:
   VpcId:
