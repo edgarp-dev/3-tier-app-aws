@@ -399,6 +399,8 @@ Resources:
           Value: "3-tier-app-middleware-tier-auto-scaling-group"
           PropagateAtLaunch: true
 
+######### DATABASE TIER #########
+
 Outputs:
   VpcId:
     Value: !GetAtt Vpc.VpcId
