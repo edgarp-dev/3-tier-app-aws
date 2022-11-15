@@ -436,7 +436,7 @@ Resources:
   Database:
     Type: AWS::RDS::DBCluster
     Properties:
-      Engine: aurora
+      Engine: aurora-mysql
       EngineMode: serverless
       DBSubnetGroupName: !Ref DatabaseTierSubnetGroup
       ScalingConfiguration:
