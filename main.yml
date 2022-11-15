@@ -180,6 +180,17 @@ Resources:
     Properties:
       RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateDatabaseSubnet2
+  
+  DatabaseTierSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Database Tier Subnet Group"
+      SubnetIds:
+        - !Ref PrivateDatabaseSubnet1
+        - !Ref PrivateDatabaseSubnet2
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database-subnet-group"
 
   ######### APPLICATION TIER #########
   WebTierLoadBalancerSecurityGroup:
@@ -399,7 +410,56 @@ Resources:
           Value: "3-tier-app-middleware-tier-auto-scaling-group"
           PropagateAtLaunch: true
 
-######### DATABASE TIER #########
+  ######### DATABASE TIER #########
+  DatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: "Database credentials"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "dbuser"}'
+        GenerateStringKey: "password"
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database-tier-secret"
+  
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Database Tier Security Group"
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database-sg"
+  
+  Database:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora
+      EngineMode: serverless
+      DBSubnetGroupName: !Ref DatabaseTierSubnetGroup
+      ScalingConfiguration:
+        AutoPause: True
+        MaxCapacity: 1
+        MinCapacity: 1
+        SecondsUntilAutoPause: 300
+      MasterUsername: !Join [ ":", [ "{{resolve:secretsmanager", !Ref DatabaseSecret, "SecretString", "username}}" ] ]
+      MasterUserPassword: !Join [ ":", [ "{{resolve:secretsmanager", !Ref DatabaseSecret, "SecretString", "password}}" ] ]
+      VpcSecurityGroupIds:
+        - !Ref DatabaseSecurityGroup
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database"
+  
+  DatabaseSecurityGroupIngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: !GetAtt Database.Endpoint.Port
+      ToPort: !GetAtt Database.Endpoint.Port
+      SourceSecurityGroupId: !Ref MiddlewareInstanceSecurityGroup
+      GroupId: !Ref DatabaseSecurityGroup
 
 Outputs:
   VpcId:
