@@ -248,7 +248,7 @@ Resources:
     Properties:
       Engine: aurora-mysql
       EngineMode: serverless
-      DBSubnetGroupName: !Ref DatabaseTierSubnetGroup
+      DBSubnetGroupName: !ImportValue DatabaseTierSubnetGroupId
       ScalingConfiguration:
         AutoPause: True
         MaxCapacity: 1

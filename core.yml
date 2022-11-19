@@ -212,7 +212,12 @@ Outputs:
     Export:
       Name: PrivateMiddlewareSubnet1Id
   
-  PrivateMiddlewareSubnet2:
+  PrivateMiddlewareSubnet2Id:
     Value: !Ref PrivateMiddlewareSubnet2
     Export:
       Name: PrivateMiddlewareSubnet2Id
+  
+  DatabaseTierSubnetGroupId:
+    Value: !Reg DatabaseTierSubnetGroup
+    Export:
+      Name: DatabaseTierSubnetGroupId
