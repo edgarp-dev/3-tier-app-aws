@@ -112,6 +112,6 @@ Resources:
   
 Outputs:
   WebInstanceSecurityGroupId:
-    !Ref WebInstanceSecurityGroup
+    Value: !Ref WebInstanceSecurityGroup
     Export:
       Name: WebInstanceSecurityGroupId
