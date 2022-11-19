@@ -1,0 +1,208 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Core Network Components Template
+  
+Resources:
+  Vpc:
+      Type: AWS::EC2::VPC
+      Properties:
+        CidrBlock: "10.0.0.0/16"
+        EnableDnsHostnames: true
+        EnableDnsSupport: true
+        InstanceTenancy: "default"
+        Tags:
+          - Key: "Name"
+            Value: "3-tier-app-vpc"
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-ig"
+
+  VpcIGAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref Vpc
+
+  PublicAppSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      CidrBlock: "10.0.0.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-public-app-subnet-1"
+
+  PublicAppSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref "AWS::Region"
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-public-app-subnet-2"
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-public-rt"
+
+  InternetGatewayRoute:
+    DependsOn: VpcIGAttachment
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicAppSubnetsRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicAppSubnet1
+
+  PublicAppSubnetsRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicAppSubnet2
+
+  PrivateMiddlewareSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      CidrBlock: "10.0.2.0/24"
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-private-middleware-subnet-1"
+
+  PrivateMiddlewareSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref "AWS::Region"
+      CidrBlock: "10.0.3.0/24"
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-private-middleware-subnet-2"
+
+  PrivateDatabaseSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      CidrBlock: "10.0.4.0/24"
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-private-database-subnet-1"
+
+  PrivateDatabaseSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      AvailabilityZone: !Select
+        - 1
+        - Fn::GetAZs: !Ref "AWS::Region"
+      CidrBlock: "10.0.5.0/24"
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-private-database-subnet-2"
+
+  NatElasticIp:
+    Type: AWS::EC2::EIP
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatElasticIp.AllocationId
+      ConnectivityType: "public"
+      SubnetId: !Ref PublicAppSubnet1
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-nat-gateway"
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-private-route-table"
+
+  NatGatewayRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
+
+  PrivateMiddlewareRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateMiddlewareSubnet1
+
+  PrivateMiddlewareRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateMiddlewareSubnet2
+
+  PrivateDatabaseRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateDatabaseSubnet1
+
+  PrivateDatabaseRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateDatabaseSubnet2
+  
+  DatabaseTierSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: "Database Tier Subnet Group"
+      SubnetIds:
+        - !Ref PrivateDatabaseSubnet1
+        - !Ref PrivateDatabaseSubnet2
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database-subnet-group"
+  
+Outputs:
+  VpcId:
+    Value: !Ref Vpc
+    Export:
+      Name: VpcId
+
+  PublicAppSubnet1Id:
+    Value: !Ref PublicAppSubnet1
+    Export:
+      Name: PublicAppSubnet1Id
+  
+  PublicAppSubnet2Id:
+    Value: !Ref PublicAppSubnet2
+    Export:
+      Name: !Ref PublicAppSubnet2Id
