@@ -2,115 +2,6 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: AWS 3 Tier Application
 
 Resources:
-  ######### APPLICATION TIER #########
-  WebTierLoadBalancerSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId: !ImportValue VpcId
-      GroupDescription: "Web Tier Secutiry Group"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          CidrIp: 0.0.0.0/0
-          FromPort: 80
-          ToPort: 80
-      Tags:
-        - Key: "Name"
-          Value: "3-tier-app-web-tier-sg"
-
-  WebTierLoadBalancer:
-    DependsOn: VpcIGAttachment
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      Type: "application"
-      Scheme: internet-facing
-      SecurityGroups:
-        - !Ref WebTierLoadBalancerSecurityGroup
-      Subnets:
-        - !ImportValue PublicAppSubnet1Id
-        - !ImportValue PublicAppSubnet2Id
-      Tags:
-        - Key: "Name"
-          Value: "3-tier-app-web-tier-load-balancer"
-
-  WebTierTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Port: 80
-      Protocol: HTTP
-      VpcId: !ImportValue VpcId
-      Tags:
-        - Key: "Name"
-          Value: "3-tier-app-web-tier-target-group"
-
-  WebTierLoadBalancerListener:
-    Type: AWS::ElasticLoadBalancingV2::Listener
-    Properties:
-      LoadBalancerArn: !Ref WebTierLoadBalancer
-      Port: 80
-      Protocol: HTTP
-      DefaultActions:
-        - Type: "forward"
-          TargetGroupArn: !Ref WebTierTargetGroup
-
-  WebInstanceSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId: !ImportValue VpcId
-      GroupDescription: "Web Instance Security Group"
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          SourceSecurityGroupId: !Ref WebTierLoadBalancerSecurityGroup
-          FromPort: 80
-          ToPort: 80
-      Tags:
-        - Key: "Name"
-          Value: "3-tier-app-web-instance-sg"
-
-  WebInstanceLaunchTemplate:
-    Type: AWS::EC2::LaunchTemplate
-    Properties:
-      LaunchTemplateData:
-        ImageId: "ami-09d3b3274b6c5d4aa"
-        InstanceType: t2.micro
-        KeyName: 3TierAppKey
-        SecurityGroupIds:
-          - !Ref WebInstanceSecurityGroup
-        UserData:
-          Fn::Base64: !Sub |
-            #!/bin/bash
-            sudo yum update -y
-            sudo yum install -y httpd
-            sudo systemctl start httpd
-            sudo systemctl enable httpd
-            echo "Hello World From Application Tier :D" | sudo tee /var/www/html/index.html
-        TagSpecifications:
-          - ResourceType: instance
-            Tags:
-              - Key: "Name"
-                Value: "3-tier-app-web-tier-launch-template"
-
-  WebTierAutoScalingGroup:
-    DependsOn:
-      - VpcIGAttachment
-      - WebTierLoadBalancerListener
-    Type: AWS::AutoScaling::AutoScalingGroup
-    Properties:
-      MaxSize: "2"
-      MinSize: "1"
-      DesiredCapacity: "2"
-      VPCZoneIdentifier:
-        - !ImportValue PublicAppSubnet1Id
-        - !ImportValue PublicAppSubnet2Id
-      LaunchTemplate:
-        LaunchTemplateId: !Ref WebInstanceLaunchTemplate
-        Version: "1"
-      TargetGroupARNs:
-        - !Ref WebTierTargetGroup
-      Tags:
-        - Key: "Name"
-          Value: "3-tier-app-web-tier-auto-scaling-group"
-          PropagateAtLaunch: true
-
 ######### MIDDLEWARE TIER #########
   MiddlewareLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -119,7 +10,7 @@ Resources:
       GroupDescription: "Middleware Load Balancer Security Group"
       SecurityGroupIngress:
         - IpProtocol: tcp
-          SourceSecurityGroupId: !Ref WebInstanceSecurityGroup
+          SourceSecurityGroupId: !ImportValue WebInstanceSecurityGroupId
           FromPort: 80
           ToPort: 80
       Tags:
