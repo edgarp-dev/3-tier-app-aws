@@ -135,8 +135,8 @@ Resources:
       SecurityGroups:
         - !Ref MiddlewareLoadBalancerSecurityGroup
       Subnets:
-        - !Ref PrivateMiddlewareSubnet1
-        - !Ref PrivateMiddlewareSubnet2
+        - !ImportValue PrivateMiddlewareSubnet1Id
+        - !ImportValue PrivateMiddlewareSubnet2Id
       Tags:
         - Key: "Name"
           Value: "3-tier-app-middleware-tier-load-balancer"
@@ -208,8 +208,8 @@ Resources:
       MinSize: "1"
       DesiredCapacity: "2"
       VPCZoneIdentifier:
-        - !Ref PrivateMiddlewareSubnet1
-        - !Ref PrivateMiddlewareSubnet2
+        - !ImportValue PrivateMiddlewareSubnet1Id
+        - !ImportValue PrivateMiddlewareSubnet2Id
       LaunchTemplate:
         LaunchTemplateId: !Ref MiddlewareInstanceLaunchTemplate
         Version: "1"

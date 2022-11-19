@@ -206,3 +206,13 @@ Outputs:
     Value: !Ref PublicAppSubnet2
     Export:
       Name: !Ref PublicAppSubnet2Id
+  
+  PrivateMiddlewareSubnet1Id:
+    Value: !Ref PrivateMiddlewareSubnet1
+    Export:
+      Name: PrivateMiddlewareSubnet1Id
+  
+  PrivateMiddlewareSubnet2:
+    Value: !Ref PrivateMiddlewareSubnet2
+    Export:
+      Name: PrivateMiddlewareSubnet2Id
