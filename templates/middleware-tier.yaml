@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Middleware Tier Template
-  
+
 Resources:
   MiddlewareLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -29,7 +29,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "3-tier-app-middleware-tier-load-balancer"
-  
+
   MiddlewareTierTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -49,7 +49,7 @@ Resources:
       DefaultActions:
         - Type: "forward"
           TargetGroupArn: !Ref MiddlewareTierTargetGroup
-  
+
   MiddlewareInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -63,7 +63,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "3-tier-app-middleware-instance-sg"
-    
+
   MiddlewareInstanceLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -86,7 +86,7 @@ Resources:
             Tags:
               - Key: "Name"
                 Value: "3-tier-app-middleware-tier-launch-template"
-  
+
   MiddlewareTierAutoScalingGroup:
     DependsOn: MiddlewareTierLoadBalancerListener
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -106,10 +106,9 @@ Resources:
         - Key: "Name"
           Value: "3-tier-app-middleware-tier-auto-scaling-group"
           PropagateAtLaunch: true
-  
+
 Outputs:
   MiddlewareInstanceSecurityGroupId:
     Value: !Ref MiddlewareInstanceSecurityGroup
     Export:
       Name: MiddlewareInstanceSecurityGroupId
-      

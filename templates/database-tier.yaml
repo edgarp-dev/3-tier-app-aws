@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Database Tier Template
-  
+
 Resources:
   DatabaseSecret:
     Type: AWS::SecretsManager::Secret
@@ -14,7 +14,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "3-tier-app-database-tier-secret"
-  
+
   DatabaseSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -23,7 +23,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "3-tier-app-database-sg"
-  
+
   Database:
     Type: AWS::RDS::DBCluster
     Properties:
@@ -35,14 +35,32 @@ Resources:
         MaxCapacity: 1
         MinCapacity: 1
         SecondsUntilAutoPause: 300
-      MasterUsername: !Join [ ":", [ "{{resolve:secretsmanager", !Ref DatabaseSecret, "SecretString", "username}}" ] ]
-      MasterUserPassword: !Join [ ":", [ "{{resolve:secretsmanager", !Ref DatabaseSecret, "SecretString", "password}}" ] ]
+      MasterUsername:
+        !Join [
+          ":",
+          [
+            "{{resolve:secretsmanager",
+            !Ref DatabaseSecret,
+            "SecretString",
+            "username}}",
+          ],
+        ]
+      MasterUserPassword:
+        !Join [
+          ":",
+          [
+            "{{resolve:secretsmanager",
+            !Ref DatabaseSecret,
+            "SecretString",
+            "password}}",
+          ],
+        ]
       VpcSecurityGroupIds:
         - !Ref DatabaseSecurityGroup
       Tags:
         - Key: "Name"
           Value: "3-tier-app-database"
-  
+
   DatabaseSecurityGroupIngressRule:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -51,4 +69,3 @@ Resources:
       ToPort: !GetAtt Database.Endpoint.Port
       SourceSecurityGroupId: !ImportValue MiddlewareInstanceSecurityGroupId
       GroupId: !Ref DatabaseSecurityGroup
-      

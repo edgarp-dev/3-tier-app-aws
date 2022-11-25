@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Core Network Components Template
-  
+
 Resources:
   Vpc:
     Type: AWS::EC2::VPC
@@ -179,7 +179,7 @@ Resources:
     Properties:
       RouteTableId: !Ref PrivateRouteTable
       SubnetId: !Ref PrivateDatabaseSubnet2
-  
+
   DatabaseTierSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
@@ -190,7 +190,7 @@ Resources:
       Tags:
         - Key: "Name"
           Value: "3-tier-app-database-subnet-group"
-  
+
 Outputs:
   VpcId:
     Value: !Ref Vpc
@@ -201,24 +201,23 @@ Outputs:
     Value: !Ref PublicAppSubnet1
     Export:
       Name: PublicAppSubnet1Id
-  
+
   PublicAppSubnet2Id:
     Value: !Ref PublicAppSubnet2
     Export:
       Name: PublicAppSubnet2Id
-  
+
   PrivateMiddlewareSubnet1Id:
     Value: !Ref PrivateMiddlewareSubnet1
     Export:
       Name: PrivateMiddlewareSubnet1Id
-  
+
   PrivateMiddlewareSubnet2Id:
     Value: !Ref PrivateMiddlewareSubnet2
     Export:
       Name: PrivateMiddlewareSubnet2Id
-  
+
   DatabaseTierSubnetGroupId:
     Value: !Ref DatabaseTierSubnetGroup
     Export:
       Name: DatabaseTierSubnetGroupId
-      

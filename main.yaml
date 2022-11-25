@@ -7,14 +7,14 @@ Resources:
     Properties:
       TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/core.yaml"
       TimeoutInMinutes: 10
-    
+
   WebTierStack:
     DependsOn: CoreStack
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/web-tier.yaml"
-      TimeoutInMinutes: 10 
-  
+      TimeoutInMinutes: 10
+
   MiddlewareTierStack:
     DependsOn:
       - CoreStack
@@ -32,4 +32,3 @@ Resources:
     Properties:
       TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/database-tier.yaml"
       TimeoutInMinutes: 10
-      

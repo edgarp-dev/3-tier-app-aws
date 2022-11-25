@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Web Tier Template
-  
+
 Resources:
   WebTierLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -106,10 +106,9 @@ Resources:
         - Key: "Name"
           Value: "3-tier-app-web-tier-auto-scaling-group"
           PropagateAtLaunch: true
-  
+
 Outputs:
   WebInstanceSecurityGroupId:
     Value: !Ref WebInstanceSecurityGroup
     Export:
       Name: WebInstanceSecurityGroupId
-      
