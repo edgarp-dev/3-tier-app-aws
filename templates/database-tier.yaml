@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Database Tier Template
+
+Resources:
+  DatabaseSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: "Database credentials"
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "dbuser"}'
+        GenerateStringKey: "password"
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database-tier-secret"
+
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Database Tier Security Group"
+      VpcId: !ImportValue VpcId
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database-sg"
+
+  Database:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      Engine: aurora-mysql
+      EngineMode: serverless
+      DBSubnetGroupName: !ImportValue DatabaseTierSubnetGroupId
+      ScalingConfiguration:
+        AutoPause: True
+        MaxCapacity: 1
+        MinCapacity: 1
+        SecondsUntilAutoPause: 300
+      MasterUsername:
+        !Join [
+          ":",
+          [
+            "{{resolve:secretsmanager",
+            !Ref DatabaseSecret,
+            "SecretString",
+            "username}}",
+          ],
+        ]
+      MasterUserPassword:
+        !Join [
+          ":",
+          [
+            "{{resolve:secretsmanager",
+            !Ref DatabaseSecret,
+            "SecretString",
+            "password}}",
+          ],
+        ]
+      VpcSecurityGroupIds:
+        - !Ref DatabaseSecurityGroup
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-database"
+
+  DatabaseSecurityGroupIngressRule:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      FromPort: !GetAtt Database.Endpoint.Port
+      ToPort: !GetAtt Database.Endpoint.Port
+      SourceSecurityGroupId: !ImportValue MiddlewareInstanceSecurityGroupId
+      GroupId: !Ref DatabaseSecurityGroup

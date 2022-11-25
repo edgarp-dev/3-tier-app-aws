@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: S3 Bucket To Store Template Artifacts
+
+Resources:
+  ThreeTierAppArtifactsBucket:
+    Type: AWS::S3::Bucket
+
+Outputs:
+  ThreeTierAppArtifactsBucketArn:
+    Value: !Ref ThreeTierAppArtifactsBucket
