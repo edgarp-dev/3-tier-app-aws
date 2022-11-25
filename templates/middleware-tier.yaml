@@ -112,3 +112,4 @@ Outputs:
     Value: !Ref MiddlewareInstanceSecurityGroup
     Export:
       Name: MiddlewareInstanceSecurityGroupId
+      

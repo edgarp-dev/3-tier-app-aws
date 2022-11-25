@@ -32,3 +32,4 @@ Resources:
     Properties:
       TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/database-tier.yaml"
       TimeoutInMinutes: 10
+      

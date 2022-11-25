@@ -8,3 +8,4 @@ Resources:
 Outputs:
   ThreeTierAppArtifactsBucketArn:
     Value: !Ref ThreeTierAppArtifactsBucket
+    

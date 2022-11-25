@@ -221,3 +221,4 @@ Outputs:
     Value: !Ref DatabaseTierSubnetGroup
     Export:
       Name: DatabaseTierSubnetGroupId
+      

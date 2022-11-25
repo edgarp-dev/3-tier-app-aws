@@ -51,3 +51,4 @@ Resources:
       ToPort: !GetAtt Database.Endpoint.Port
       SourceSecurityGroupId: !ImportValue MiddlewareInstanceSecurityGroupId
       GroupId: !Ref DatabaseSecurityGroup
+      
