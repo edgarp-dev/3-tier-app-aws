@@ -3,15 +3,15 @@ Description: Core Network Components Template
   
 Resources:
   Vpc:
-      Type: AWS::EC2::VPC
-      Properties:
-        CidrBlock: "10.0.0.0/16"
-        EnableDnsHostnames: true
-        EnableDnsSupport: true
-        InstanceTenancy: "default"
-        Tags:
-          - Key: "Name"
-            Value: "3-tier-app-vpc"
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      Tags:
+        - Key: "Name"
+          Value: "3-tier-app-vpc"
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -205,7 +205,7 @@ Outputs:
   PublicAppSubnet2Id:
     Value: !Ref PublicAppSubnet2
     Export:
-      Name: !Ref PublicAppSubnet2Id
+      Name: PublicAppSubnet2Id
   
   PrivateMiddlewareSubnet1Id:
     Value: !Ref PrivateMiddlewareSubnet1
@@ -218,6 +218,6 @@ Outputs:
       Name: PrivateMiddlewareSubnet2Id
   
   DatabaseTierSubnetGroupId:
-    Value: !Reg DatabaseTierSubnetGroup
+    Value: !Ref DatabaseTierSubnetGroup
     Export:
       Name: DatabaseTierSubnetGroupId

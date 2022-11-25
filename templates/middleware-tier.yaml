@@ -17,7 +17,6 @@ Resources:
           Value: "3-tier-app-middleware-tier-sg"
 
   MiddlewareElasticLoadBalancer:
-    DependsOn: VpcIGAttachment
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: application
@@ -89,9 +88,7 @@ Resources:
                 Value: "3-tier-app-middleware-tier-launch-template"
   
   MiddlewareTierAutoScalingGroup:
-    DependsOn:
-      - VpcIGAttachment
-      - MiddlewareTierLoadBalancerListener
+    DependsOn: MiddlewareTierLoadBalancerListener
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       MaxSize: "2"

@@ -17,7 +17,6 @@ Resources:
           Value: "3-tier-app-web-tier-sg"
 
   WebTierLoadBalancer:
-    DependsOn: VpcIGAttachment
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Type: "application"
@@ -89,9 +88,7 @@ Resources:
                 Value: "3-tier-app-web-tier-launch-template"
 
   WebTierAutoScalingGroup:
-    DependsOn:
-      - VpcIGAttachment
-      - WebTierLoadBalancerListener
+    DependsOn: WebTierLoadBalancerListener
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       MaxSize: "2"
