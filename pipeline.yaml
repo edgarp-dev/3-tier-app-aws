@@ -177,8 +177,7 @@ Resources:
                 RoleArn: !GetAtt CfnRole.Arn
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: three-tier-app-stack
-                TemplatePath: BuildOutput::core.yaml
-
+                TemplatePath: BuildOutput::main.yaml
   
   GithubWebhook:
     Type: 'AWS::CodePipeline::Webhook'
