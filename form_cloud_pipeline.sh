@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CODEPIPELINE_STACK_NAME="three-tier-app-pipeline"
-CURRENT_BRANCH='master'
+CURRENT_BRANCH='main'
 
 if [ -z ${1} ]
 then
@@ -39,9 +39,10 @@ else
         echo "Stack does not exists"
         echo "Creating stack"
 
-        # aws cloudformation create-stack \
-        #         --capabilities CAPABILITY_IAM \
-        #         --stack-name $CODEPIPELINE_STACK_NAME \
-        #         --parameters ParameterKey=GithubOAuthToken,ParameterValue=${1} \
-        #         --template-body file://pipeline.yaml
+        aws cloudformation create-stack \
+                --capabilities CAPABILITY_IAM \
+                --stack-name $CODEPIPELINE_STACK_NAME \
+                --parameters ParameterKey=GithubOAuthToken,ParameterValue=${1} \
+                ParameterKey=GithubBranch,ParameterValue=$CURRENT_BRANCH \
+                --template-body file://pipeline.yaml
 fi
