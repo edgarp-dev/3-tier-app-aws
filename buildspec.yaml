@@ -12,4 +12,4 @@ phases:
       - cfn-lint templates/core.yaml
 artifacts:
   files:
-    - core.yaml
+    - main.yaml
