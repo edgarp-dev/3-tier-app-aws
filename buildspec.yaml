@@ -8,6 +8,10 @@ phases:
       - pip install awscli cfn-lint
   build:
     commands:
+      - echo $CONFIGURATION_FILE
+      - echo ----------------------------------->
+      - echo $CODEBUILD_SRC_DIR 
+      - echo ----------------------------------->
       - aws cloudformation validate-template --template-body file://templates/core.yaml
       - aws cloudformation validate-template --template-body file://templates/web-tier.yaml 
       - aws cloudformation validate-template --template-body file://templates/middleware-tier.yaml 
