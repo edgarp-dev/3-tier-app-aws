@@ -1,5 +1,7 @@
 version: 0.2
 
+env:
+
 phases:
   install:
     runtime-versions:
@@ -19,3 +21,4 @@ phases:
 artifacts:
   files:
     - main.yaml
+    - config/$CONFIGURATION_FILE

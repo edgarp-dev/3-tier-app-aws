@@ -2,10 +2,8 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: 3 Tier App Pipeline Template
 
 Parameters:
-  GithubOAuthToken:
+  Env:
     Type: String
-    NoEcho: true
-    AllowedPattern: "[A-Za-z0-9_]*"
 
   GithubOwner:
     Type: String
@@ -22,18 +20,24 @@ Parameters:
     Default: main
     AllowedPattern: "[A-Za-z0-9-_]+"
 
-  ApplicationStackName:
-    Type: String
-    Default: three-tier-app-codepipeline
-    AllowedPattern: "[A-Za-z0-9-]+"
-
 Resources:
   PipelineArtifactsBucket:
     Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join
+        - ""
+        - - "three-tier-app-"
+          - !Ref Env
+          - "-artifacts-bucket"
 
   ValidationCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Join
+        - ""
+        - - "three-tier-app-"
+          - !Ref Env
+          - "-validation-codebuild-role"
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -69,20 +73,36 @@ Resources:
   ValidationCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
+      Name: !Join
+        - ""
+        - - "three-tier-app-"
+          - !Ref Env
+          - "-validation-codebuild"
       Artifacts:
         Type: CODEPIPELINE
       ServiceRole: !GetAtt ValidationCodeBuildRole.Arn
-      Name: three-tier-app-validation-codebuild
       Source:
         Type: CODEPIPELINE
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:2.0
+        EnvironmentVariables:
+          - Name: CONFIGURATION_FILE
+            Type: PLAINTEXT
+            Value: !Join
+              - ""
+              - - !Ref Env
+                - ".json"
 
   PipelineRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Join
+        - ""
+        - - "three-tier-app-"
+          - !Ref Env
+          - "-pipeline-role"
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -108,6 +128,11 @@ Resources:
   CfnRole:
     Type: "AWS::IAM::Role"
     Properties:
+      RoleName: !Join
+        - ""
+        - - "three-tier-app-"
+          - !Ref Env
+          - "-cfn-role"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -125,7 +150,10 @@ Resources:
       ArtifactStore:
         Location: !Ref PipelineArtifactsBucket
         Type: S3
-      Name: Three-Tier-App-Pipeline
+      Name: !Join
+        - ""
+        - - "three-tier-app-"
+          - !Ref Env
       RestartExecutionOnUpdate: false
       RoleArn: !GetAtt PipelineRole.Arn
       Stages:
@@ -145,7 +173,7 @@ Resources:
                 Repo: !Ref GithubRepo
                 Branch: !Ref GithubBranch
                 PollForSourceChanges: false
-                OAuthToken: !Ref GithubOAuthToken
+                OAuthToken: "{{resolve:ssm:three-tier-app-github-token}}"
               RunOrder: 1
         - Name: Validate
           Actions:
@@ -176,7 +204,16 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt CfnRole.Arn
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: three-tier-app-stack
+                StackName: !Join
+                  - ""
+                  - - "three-tier-app-"
+                    - !Ref Env
+                    - "-stack"
+                TemplateConfiguration: !Join
+                  - ""
+                  - - "BuildOutput::"
+                    - !Ref Env
+                    - ".json"
                 TemplatePath: BuildOutput::main.yaml
 
   GithubWebhook:
@@ -184,7 +221,7 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: !Ref GithubOAuthToken
+        SecretToken: "{{resolve:ssm:three-tier-app-github-token}}"
       RegisterWithThirdParty: "true"
       Filters:
         - JsonPath: "$.ref"
