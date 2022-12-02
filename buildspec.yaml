@@ -19,4 +19,4 @@ phases:
 artifacts:
   files:
     - main.yaml
-    - config/$CONFIGURATION_FILE
+    - config/dev.json
