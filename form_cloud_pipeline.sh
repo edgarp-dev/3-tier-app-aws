@@ -12,8 +12,7 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-if [[ $ENV != 'dev' && $ENV != 'prod' ]]
-then
+if [[ $ENV != 'dev' && $ENV != 'prod' ]]; then
         echo "$ENV is an invalid env, valid envs are dev and prod"
         exit 1
 fi
@@ -34,6 +33,7 @@ CODEPIPELINE_STACK_NAME="three-tier-app-$ENV-pipeline"
 STACK_INFO=$(aws cloudformation describe-stacks --stack-name $CODEPIPELINE_STACK_NAME)
 
 STACK_ID=$(echo $STACK_INFO | jq -r '.Stacks[0].StackId')
+CONFIG_ENV=$(jq .[0].ParameterValue ./config/$ENV.json)
 
 if [[ -n $STACK_ID ]]; then
         echo "Stacks exists"
@@ -42,9 +42,8 @@ if [[ -n $STACK_ID ]]; then
         aws cloudformation update-stack \
                 --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
                 --stack-name $CODEPIPELINE_STACK_NAME \
-                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH \
+                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH ParameterKey=Env,ParameterValue=$CONFIG_ENV \
                 --template-body file://pipeline.yaml \
-                --parameters file://config/$ENV.json
         
 else
         echo "Stack does not exists"
@@ -53,7 +52,6 @@ else
         aws cloudformation create-stack \
                 --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
                 --stack-name $CODEPIPELINE_STACK_NAME \
-                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH \ \
+                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH ParameterKey=Env,ParameterValue=$CONFIG_ENV \
                 --template-body file://pipeline.yaml \
-                 --parameters file://config/$ENV.json
 fi
