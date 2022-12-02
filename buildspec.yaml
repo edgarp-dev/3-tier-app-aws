@@ -10,6 +10,7 @@ phases:
     commands:
       - echo $CONFIGURATION_FILE
       - echo $CODEBUILD_SRC_DIR 
+      - ls
       - aws cloudformation validate-template --template-body file://templates/core.yaml
       - aws cloudformation validate-template --template-body file://templates/web-tier.yaml 
       - aws cloudformation validate-template --template-body file://templates/middleware-tier.yaml 
