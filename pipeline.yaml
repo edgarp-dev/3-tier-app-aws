@@ -211,7 +211,7 @@ Resources:
                     - "-stack"
                 TemplateConfiguration: !Join
                   - ""
-                  - - "BuildOutput::config/"
+                  - - "BuildOutput::"
                     - !Ref Env
                     - ".json"
                 TemplatePath: BuildOutput::main.yaml
