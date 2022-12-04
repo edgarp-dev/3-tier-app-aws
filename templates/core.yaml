@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Core Network Components Template
 
+Parameters:
+  Env:
+    Type: String
+
 Resources:
   Vpc:
     Type: AWS::EC2::VPC
@@ -11,14 +15,14 @@ Resources:
       InstanceTenancy: "default"
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-vpc"
+          Value: !Sub ${Env}-three-tier-app-vpc
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-ig"
+          Value: !Sub ${Env}-three-tier-app-ig
 
   VpcIGAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -37,7 +41,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-public-app-subnet-1"
+          Value: !Sub ${Env}-three-tier-app-public-app-subnet-1
 
   PublicAppSubnet2:
     Type: AWS::EC2::Subnet
@@ -50,7 +54,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-public-app-subnet-2"
+          Value: !Sub ${Env}-three-tier-app-public-app-subnet-2
 
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
@@ -58,7 +62,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-public-rt"
+          Value: !Sub ${Env}-three-tier-app-public-rt
 
   InternetGatewayRoute:
     DependsOn: VpcIGAttachment
@@ -90,7 +94,7 @@ Resources:
       CidrBlock: "10.0.2.0/24"
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-private-middleware-subnet-1"
+          Value: !Sub ${Env}-three-tier-app-private-middleware-subnet-1
 
   PrivateMiddlewareSubnet2:
     Type: AWS::EC2::Subnet
@@ -102,7 +106,7 @@ Resources:
       CidrBlock: "10.0.3.0/24"
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-private-middleware-subnet-2"
+          Value: !Sub ${Env}-three-tier-app-private-middleware-subnet-2
 
   PrivateDatabaseSubnet1:
     Type: AWS::EC2::Subnet
@@ -114,7 +118,7 @@ Resources:
       CidrBlock: "10.0.4.0/24"
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-private-database-subnet-1"
+          Value: !Sub ${Env}-3-tier-app-private-database-subnet-1
 
   PrivateDatabaseSubnet2:
     Type: AWS::EC2::Subnet
@@ -126,7 +130,7 @@ Resources:
       CidrBlock: "10.0.5.0/24"
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-private-database-subnet-2"
+          Value: !Sub ${Env}-3-tier-app-private-database-subnet-2
 
   NatElasticIp:
     Type: AWS::EC2::EIP
@@ -139,7 +143,7 @@ Resources:
       SubnetId: !Ref PublicAppSubnet1
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-nat-gateway"
+          Value: !Sub ${Env}-three-tier-app-nat-gateway
 
   PrivateRouteTable:
     Type: AWS::EC2::RouteTable
@@ -147,7 +151,7 @@ Resources:
       VpcId: !Ref Vpc
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-private-route-table"
+          Value: !Sub ${Env}-three-tier-app-private-route-table
 
   NatGatewayRoute:
     Type: AWS::EC2::Route
@@ -189,7 +193,7 @@ Resources:
         - !Ref PrivateDatabaseSubnet2
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-database-subnet-group"
+          Value: !Sub ${Env}-three-tier-app-database-subnet-group
 
 Outputs:
   VpcId:

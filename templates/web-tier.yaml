@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Web Tier Template
 
+Parameters:
+  Env:
+    Type: String
+
 Resources:
   WebTierLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -14,7 +18,7 @@ Resources:
           ToPort: 80
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-web-tier-sg"
+          Value: !Sub ${Env}-three-tier-app-web-tier-sg
 
   WebTierLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -28,7 +32,7 @@ Resources:
         - !ImportValue PublicAppSubnet2Id
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-web-tier-load-balancer"
+          Value: !Sub ${Env}-three-tier-app-web-tier-load-balancer
 
   WebTierTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -38,7 +42,7 @@ Resources:
       VpcId: !ImportValue VpcId
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-web-tier-target-group"
+          Value: !Sub ${Env}-three-tier-app-web-tier-target-group
 
   WebTierLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -62,7 +66,7 @@ Resources:
           ToPort: 80
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-web-instance-sg"
+          Value: !Sub ${Env}-three-tier-app-web-instance-sg
 
   WebInstanceLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
@@ -85,7 +89,7 @@ Resources:
           - ResourceType: instance
             Tags:
               - Key: "Name"
-                Value: "3-tier-app-web-tier-launch-template"
+                Value: !Sub ${Env}-three-tier-app-web-tier-launch-template
 
   WebTierAutoScalingGroup:
     DependsOn: WebTierLoadBalancerListener
@@ -104,7 +108,7 @@ Resources:
         - !Ref WebTierTargetGroup
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-web-tier-auto-scaling-group"
+          Value: !Sub ${Env}-three-tier-app-web-tier-auto-scaling-group
           PropagateAtLaunch: true
 
 Outputs:
