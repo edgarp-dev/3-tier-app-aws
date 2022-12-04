@@ -11,6 +11,8 @@ Resources:
     Properties:
       TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-1fbwlemgan6g3.s3.amazonaws.com/core.yaml"
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env
 
   WebTierStack:
     DependsOn: CoreStack
@@ -18,6 +20,8 @@ Resources:
     Properties:
       TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-1fbwlemgan6g3.s3.amazonaws.com/web-tier.yaml"
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env
 
   # MiddlewareTierStack:
   #   DependsOn:
