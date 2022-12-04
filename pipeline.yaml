@@ -186,7 +186,7 @@ Resources:
                 - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref ValidationCodeBuild
-              RunOrder: 1
+              RunOrder: 2
         - Name: Deploy
           Actions:
             - Name: Deploy
@@ -203,8 +203,8 @@ Resources:
                 Capabilities: CAPABILITY_NAMED_IAM
                 StackName: !Join
                   - ""
-                  - - "three-tier-app-"
-                    - !Ref Env
+                  - - !Ref Env
+                    - "three-tier-app"
                     - "-stack"
                 TemplateConfiguration: BuildOutput::deploy.json
                 TemplatePath: BuildOutput::main.yaml

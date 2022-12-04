@@ -29,7 +29,7 @@ if [[ $DEPLOY_TO_PROD = true && $GIT_BRANCH != 'main' ]]; then
         exit 1
 fi
 
-CODEPIPELINE_STACK_NAME="three-tier-app-$ENV-pipeline"
+CODEPIPELINE_STACK_NAME="$ENV-three-tier-app-pipeline"
 STACK_INFO=$(aws cloudformation describe-stacks --stack-name $CODEPIPELINE_STACK_NAME)
 
 STACK_ID=$(echo $STACK_INFO | jq -r '.Stacks[0].StackId')
