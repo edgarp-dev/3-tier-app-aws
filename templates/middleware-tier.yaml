@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Middleware Tier Template
 
+Parameters:
+  Env:
+    Type: String
+
 Resources:
   MiddlewareLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -14,7 +18,7 @@ Resources:
           ToPort: 80
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-middleware-tier-sg"
+          Value: !Sub ${Env}-three-tier-app-middleware-tier-sg
 
   MiddlewareElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
@@ -28,7 +32,7 @@ Resources:
         - !ImportValue PrivateMiddlewareSubnet2Id
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-middleware-tier-load-balancer"
+          Value: !Sub ${Env}-three-tier-app-middleware-tier-load-balancer
 
   MiddlewareTierTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -38,7 +42,7 @@ Resources:
       VpcId: !ImportValue VpcId
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-middleware-tier-target-group"
+          Value: !Sub ${Env}-three-tier-app-middleware-tier-target-group
 
   MiddlewareTierLoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -62,7 +66,7 @@ Resources:
           ToPort: 80
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-middleware-instance-sg"
+          Value: !Sub ${Env}-three-tier-app-middleware-instance-sg
 
   MiddlewareInstanceLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
@@ -85,7 +89,7 @@ Resources:
           - ResourceType: instance
             Tags:
               - Key: "Name"
-                Value: "3-tier-app-middleware-tier-launch-template"
+                Value: !Sub ${Env}-three-tier-app-middleware-tier-launch-template
 
   MiddlewareTierAutoScalingGroup:
     DependsOn: MiddlewareTierLoadBalancerListener
@@ -104,7 +108,7 @@ Resources:
         - !Ref MiddlewareTierTargetGroup
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-middleware-tier-auto-scaling-group"
+          Value: !Sub ${Env}-three-tier-app-middleware-tier-auto-scaling-group
           PropagateAtLaunch: true
 
 Outputs:
