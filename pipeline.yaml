@@ -240,6 +240,24 @@ Resources:
               Configuration:
                 ProjectName: !Ref BuildeDeployConfigCodeBuild
               RunOrder: 3
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              InputArtifacts:
+                - Name: BuildOutput
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: "1"
+                Provider: CloudFormation
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                RoleArn: !GetAtt CfnRole.Arn
+                Capabilities: CAPABILITY_NAMED_IAM
+                StackName: !Sub ${Env}-three-tier-app-stack
+                TemplateConfiguration: BuildOutput::deploy.json
+                TemplatePath: BuildOutput::main.yaml
+              RunOrder: 4
 
   GithubWebhook:
     Type: "AWS::CodePipeline::Webhook"
