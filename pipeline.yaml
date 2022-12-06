@@ -4,6 +4,9 @@ Description: 3 Tier App Pipeline Template
 Parameters:
   Env:
     Type: String
+  
+  CfTemplatesBucket:
+    Type: String
 
   GithubOwner:
     Type: String
@@ -77,9 +80,9 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:2.0
         EnvironmentVariables:
-          - Name: ENV
+          - Name: CfTemplatesBucket
             Type: PLAINTEXT
-            Value: !Ref Env
+            Value: !Ref CfTemplatesBucket
 
   ValidationCodeBuildRole:
     Type: AWS::IAM::Role
@@ -204,7 +207,7 @@ Resources:
                 PollForSourceChanges: false
                 OAuthToken: "{{resolve:ssm:three-tier-app-github-token}}"
               RunOrder: 1
-        - Name: TemplatesBuild
+        - Name: Validate
           Actions:
             - InputArtifacts:
                 - Name: SourceCode
@@ -213,11 +216,13 @@ Resources:
                 Owner: AWS
                 Version: "1"
                 Provider: CodeBuild
-              Name: Templates
+              Name: Validate-Templates
+              OutputArtifacts:
+                - Name: ValidateOuput
               Configuration:
                 ProjectName: !Ref CFTemplatesCodebuild
               RunOrder: 2
-        - Name: Validate
+        - Name: Build
           Actions:
             - InputArtifacts:
                 - Name: SourceCode
@@ -226,30 +231,12 @@ Resources:
                 Owner: AWS
                 Version: "1"
                 Provider: CodeBuild
-              Name: Validate
+              Name: Build-Deploy-Config
               OutputArtifacts:
                 - Name: BuildOutput
               Configuration:
                 ProjectName: !Ref ValidationCodeBuild
               RunOrder: 3
-        - Name: Deploy
-          Actions:
-            - Name: Deploy
-              InputArtifacts:
-                - Name: BuildOutput
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Version: "1"
-                Provider: CloudFormation
-              Configuration:
-                ActionMode: CREATE_UPDATE
-                RoleArn: !GetAtt CfnRole.Arn
-                Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub ${Env}-three-tier-app-stack
-                TemplateConfiguration: BuildOutput::deploy.json
-                TemplatePath: BuildOutput::main.yaml
-              RunOrder: 4
 
   GithubWebhook:
     Type: "AWS::CodePipeline::Webhook"

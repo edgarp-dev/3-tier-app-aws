@@ -3,4 +3,13 @@ version: 0.2
 phases:
   build:
     commands:
-      - ls
+      - aws cloudformation validate-template --template-body file://templates/core.yaml
+      - aws cloudformation validate-template --template-body file://templates/web-tier.yaml 
+      - aws cloudformation validate-template --template-body file://templates/middleware-tier.yaml 
+      - aws cloudformation validate-template --template-body file://templates/database-tier.yaml
+      - cfn-lint templates/core.yaml
+      - cfn-lint templates/web-tier.yaml
+      - cfn-lint templates/middleware-tier.yaml
+      - cfn-lint templates/database-tier.yaml
+      - cd $CODEBUILD_SRC_DIR/templates
+      - aws s3 sync . s3://$CfTemplatesBucket

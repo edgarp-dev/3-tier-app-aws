@@ -2,5 +2,9 @@
   {
     "ParameterKey": "Env",
     "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "CfTemplatesBucket",
+    "ParameterValue": "dev-three-tier-app-templ-threetierappartifactsbuc-5ntcosc38gpf"
   }
 ]
