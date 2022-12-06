@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 3 Tier App Pipeline Template
+Description: Three Tier App Pipeline Template
 
 Parameters:
   Env:
@@ -71,7 +71,7 @@ Resources:
       Name: !Sub ${Env}-three-tier-app-templates-cf-codebuild
       Artifacts:
         Type: CODEPIPELINE
-      ServiceRole: !GetAtt   CFTemplatesCodeBuildRole.Arn
+      ServiceRole: !GetAtt CFTemplatesCodeBuildRole.Arn
       Source:
         Type: CODEPIPELINE
         BuildSpec: buildspecs/cf-templates-buildspec.yaml
@@ -84,10 +84,10 @@ Resources:
             Type: PLAINTEXT
             Value: !Ref CfTemplatesBucket
 
-  ValidationCodeBuildRole:
+  BuildeDeployConfigCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${Env}-three-tier-app-validation-codebuild-role
+      RoleName: !Sub ${Env}-three-tier-app-build-deploy-config-codebuild-role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -120,15 +120,16 @@ Resources:
                 Resource: "*"
           PolicyName: BuildPolicy
 
-  ValidationCodeBuild:
+  BuildeDeployConfigCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${Env}-three-tier-app-validation-codebuild
+      Name: !Sub ${Env}-three-tier-app-build-deploy-config-codebuild
       Artifacts:
         Type: CODEPIPELINE
-      ServiceRole: !GetAtt ValidationCodeBuildRole.Arn
+      ServiceRole: !GetAtt BuildeDeployConfigCodeBuildRole.Arn
       Source:
         Type: CODEPIPELINE
+        BuildSpec: buildspecs/build-deploy-config-buildpspec.yaml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
@@ -235,7 +236,7 @@ Resources:
               OutputArtifacts:
                 - Name: BuildOutput
               Configuration:
-                ProjectName: !Ref ValidationCodeBuild
+                ProjectName: !Ref BuildeDeployConfigCodeBuild
               RunOrder: 3
 
   GithubWebhook:

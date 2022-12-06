@@ -34,6 +34,7 @@ STACK_INFO=$(aws cloudformation describe-stacks --stack-name $CODEPIPELINE_STACK
 
 STACK_ID=$(echo $STACK_INFO | jq -r '.Stacks[0].StackId')
 CONFIG_ENV=$(jq .[0].ParameterValue ./config/$ENV.json)
+CF_TEMPLATES_BUCKET=$(jq .[1].ParameterValue ./config/$ENV.json)
 
 if [[ -n $STACK_ID ]]; then
         echo "Stacks exists"
@@ -42,7 +43,7 @@ if [[ -n $STACK_ID ]]; then
         aws cloudformation update-stack \
                 --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
                 --stack-name $CODEPIPELINE_STACK_NAME \
-                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH ParameterKey=Env,ParameterValue=$CONFIG_ENV \
+                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH ParameterKey=Env,ParameterValue=$CONFIG_ENV ParameterKey=CfTemplatesBucket,ParameterValue=$CF_TEMPLATES_BUCKET \
                 --template-body file://pipeline.yaml \
         
 else
@@ -52,7 +53,7 @@ else
         aws cloudformation create-stack \
                 --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
                 --stack-name $CODEPIPELINE_STACK_NAME \
-                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH ParameterKey=Env,ParameterValue=$CONFIG_ENV \
+                --parameters ParameterKey=GithubBranch,ParameterValue=$GIT_BRANCH ParameterKey=Env,ParameterValue=$CONFIG_ENV ParameterKey=CfTemplatesBucket,ParameterValue=$CF_TEMPLATES_BUCKET \
                 --template-body file://pipeline.yaml \
 
 fi
