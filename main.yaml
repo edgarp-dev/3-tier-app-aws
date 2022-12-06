@@ -12,7 +12,7 @@ Resources:
   CoreStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${CfTemplatesBucket}.s3.amazonaws.com/core.yaml"
+      TemplateURL: !Join [ '', ["https://", !Ref CfTemplatesBucket, ".s3.amazonaws.com/core.yaml"] ]
       TimeoutInMinutes: 10
       Parameters:
         Env: !Ref Env
