@@ -34,6 +34,8 @@ Resources:
     Properties:
       TemplateURL: !Join [ '', ["https://", !Ref CfTemplatesBucket, ".s3.amazonaws.com/middleware-tier.yaml"] ]
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env
 
   DatabaseTierStack:
     DependsOn:
@@ -43,3 +45,5 @@ Resources:
     Properties:
       TemplateURL: !Join [ '', ["https://", !Ref CfTemplatesBucket, ".s3.amazonaws.com/database-tier.yaml"] ]
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env
