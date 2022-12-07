@@ -1,19 +1,30 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: AWS 3 Tier Application
 
+Parameters:
+  Env:
+    Type: String
+  
+  CfTemplatesBucket:
+    Type: String
+
 Resources:
   CoreStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/core.yaml"
+      TemplateURL: !Join [ '', ["https://", !Ref CfTemplatesBucket, ".s3.amazonaws.com/core.yaml"] ]
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env
 
   WebTierStack:
     DependsOn: CoreStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/web-tier.yaml"
+      TemplateURL: !Join [ '', ["https://", !Ref CfTemplatesBucket, ".s3.amazonaws.com/web-tier.yaml"] ]
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env
 
   MiddlewareTierStack:
     DependsOn:
@@ -21,8 +32,10 @@ Resources:
       - WebTierStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/middleware-tier.yaml"
+      TemplateURL: !Join [ '', ["https://", !Ref CfTemplatesBucket, ".s3.amazonaws.com/middleware-tier.yaml"] ]
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env
 
   DatabaseTierStack:
     DependsOn:
@@ -30,5 +43,7 @@ Resources:
       - MiddlewareTierStack
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "https://three-tier-app-artifacts-threetierappartifactsbuc-wlhd17cqtjja.s3.amazonaws.com/database-tier.yaml"
+      TemplateURL: !Join [ '', ["https://", !Ref CfTemplatesBucket, ".s3.amazonaws.com/database-tier.yaml"] ]
       TimeoutInMinutes: 10
+      Parameters:
+        Env: !Ref Env

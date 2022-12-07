@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Database Tier Template
 
+Parameters:
+  Env:
+    Type: String
+
 Resources:
   DatabaseSecret:
     Type: AWS::SecretsManager::Secret
@@ -13,7 +17,7 @@ Resources:
         ExcludeCharacters: '"@/\'
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-database-tier-secret"
+          Value: !Sub ${Env}-three-tier-app-database-tier-secret
 
   DatabaseSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -22,7 +26,7 @@ Resources:
       VpcId: !ImportValue VpcId
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-database-sg"
+          Value: !Sub ${Env}-three-tier-app-database-sg
 
   Database:
     Type: AWS::RDS::DBCluster
@@ -59,7 +63,7 @@ Resources:
         - !Ref DatabaseSecurityGroup
       Tags:
         - Key: "Name"
-          Value: "3-tier-app-database"
+          Value: !Sub ${Env}-three-tier-app-database
 
   DatabaseSecurityGroupIngressRule:
     Type: AWS::EC2::SecurityGroupIngress

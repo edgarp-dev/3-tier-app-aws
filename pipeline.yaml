@@ -1,11 +1,12 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: 3 Tier App Pipeline Template
+Description: Three Tier App Pipeline Template
 
 Parameters:
-  GithubOAuthToken:
+  Env:
     Type: String
-    NoEcho: true
-    AllowedPattern: "[A-Za-z0-9_]*"
+  
+  CfTemplatesBucket:
+    Type: String
 
   GithubOwner:
     Type: String
@@ -22,18 +23,73 @@ Parameters:
     Default: main
     AllowedPattern: "[A-Za-z0-9-_]+"
 
-  ApplicationStackName:
-    Type: String
-    Default: three-tier-app-codepipeline
-    AllowedPattern: "[A-Za-z0-9-]+"
-
 Resources:
   PipelineArtifactsBucket:
     Type: AWS::S3::Bucket
-
-  ValidationCodeBuildRole:
+    Properties:
+      BucketName: !Sub ${Env}-three-tier-app-artifacts-bucket
+  
+  CFTemplatesCodeBuildRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${Env}-three-tier-app-cf-templates-codebuild-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowAssumeRole
+            Effect: Allow
+            Principal:
+              Service: "codebuild.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Sid: CodeBuild
+                Effect: Allow
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "s3:GetObject"
+                  - "s3:CopyObject"
+                  - "s3:GetObjectVersion"
+                  - "s3:PutObject"
+                  - "s3:ListBucket"
+                  - "ecr:BatchCheckLayerAvailability"
+                  - "ecr:GetDownloadUrlForLayer"
+                  - "ecr:BatchGetImage"
+                  - "ecr:GetAuthorizationToken"
+                  - "s3:GetBucketAcl"
+                  - "s3:GetBucketLocation"
+                  - "cloudformation:*"
+                  - "iam:PassRole"
+                Resource: "*"
+          PolicyName: BuildPolicy
+
+  CFTemplatesCodebuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${Env}-three-tier-app-templates-cf-codebuild
+      Artifacts:
+        Type: CODEPIPELINE
+      ServiceRole: !GetAtt CFTemplatesCodeBuildRole.Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: buildspecs/cf-templates-buildspec.yaml
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:2.0
+        EnvironmentVariables:
+          - Name: CfTemplatesBucket
+            Type: PLAINTEXT
+            Value: !Ref CfTemplatesBucket
+
+  BuildeDeployConfigCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${Env}-three-tier-app-build-deploy-config-codebuild-role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -66,23 +122,29 @@ Resources:
                 Resource: "*"
           PolicyName: BuildPolicy
 
-  ValidationCodeBuild:
+  BuildeDeployConfigCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
+      Name: !Sub ${Env}-three-tier-app-build-deploy-config-codebuild
       Artifacts:
         Type: CODEPIPELINE
-      ServiceRole: !GetAtt ValidationCodeBuildRole.Arn
-      Name: three-tier-app-validation-codebuild
+      ServiceRole: !GetAtt BuildeDeployConfigCodeBuildRole.Arn
       Source:
         Type: CODEPIPELINE
+        BuildSpec: buildspecs/build-deploy-config-buildpspec.yaml
       Environment:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/amazonlinux2-x86_64-standard:2.0
+        EnvironmentVariables:
+          - Name: ENV
+            Type: PLAINTEXT
+            Value: !Ref Env
 
   PipelineRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${Env}-three-tier-app-pipeline-role
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -108,6 +170,7 @@ Resources:
   CfnRole:
     Type: "AWS::IAM::Role"
     Properties:
+      RoleName: !Sub ${Env}-three-tier-app-cfn-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -125,7 +188,7 @@ Resources:
       ArtifactStore:
         Location: !Ref PipelineArtifactsBucket
         Type: S3
-      Name: Three-Tier-App-Pipeline
+      Name: !Sub ${Env}-three-tier-app-pipeline
       RestartExecutionOnUpdate: false
       RoleArn: !GetAtt PipelineRole.Arn
       Stages:
@@ -145,7 +208,7 @@ Resources:
                 Repo: !Ref GithubRepo
                 Branch: !Ref GithubBranch
                 PollForSourceChanges: false
-                OAuthToken: !Ref GithubOAuthToken
+                OAuthToken: "{{resolve:ssm:three-tier-app-github-token}}"
               RunOrder: 1
         - Name: Validate
           Actions:
@@ -156,12 +219,27 @@ Resources:
                 Owner: AWS
                 Version: "1"
                 Provider: CodeBuild
-              Name: Validate
+              Name: Validate-Templates
+              OutputArtifacts:
+                - Name: ValidateOuput
+              Configuration:
+                ProjectName: !Ref CFTemplatesCodebuild
+              RunOrder: 2
+        - Name: Build
+          Actions:
+            - InputArtifacts:
+                - Name: SourceCode
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: "1"
+                Provider: CodeBuild
+              Name: Build-Deploy-Config
               OutputArtifacts:
                 - Name: BuildOutput
               Configuration:
-                ProjectName: !Ref ValidationCodeBuild
-              RunOrder: 1
+                ProjectName: !Ref BuildeDeployConfigCodeBuild
+              RunOrder: 3
         - Name: Deploy
           Actions:
             - Name: Deploy
@@ -176,15 +254,17 @@ Resources:
                 ActionMode: CREATE_UPDATE
                 RoleArn: !GetAtt CfnRole.Arn
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: three-tier-app-stack
+                StackName: !Sub ${Env}-three-tier-app-stack
+                TemplateConfiguration: BuildOutput::deploy.json
                 TemplatePath: BuildOutput::main.yaml
+              RunOrder: 4
 
   GithubWebhook:
     Type: "AWS::CodePipeline::Webhook"
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: !Ref GithubOAuthToken
+        SecretToken: "{{resolve:ssm:three-tier-app-github-token}}"
       RegisterWithThirdParty: "true"
       Filters:
         - JsonPath: "$.ref"
