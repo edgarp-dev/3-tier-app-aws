@@ -1,0 +1,11 @@
+[
+    {
+      "ParameterKey": "Env",
+      "ParameterValue": "prod"
+    },
+    {
+      "ParameterKey": "CfTemplatesBucket",
+      "ParameterValue": "prod-three-tier-app-temp-threetierappartifactsbuc-1b4lcuj57yu20"
+    }
+  ]
+  
