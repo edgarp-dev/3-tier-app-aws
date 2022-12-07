@@ -2,15 +2,15 @@ version: 0.2
 
 phases:
   install:
-      runtime-versions:
-        python: 3.8
-      commands:
-        - pip install awscli cfn-lint
+    runtime-versions:
+      python: 3.8
+    commands:
+      - pip install awscli cfn-lint
   build:
     commands:
       - aws cloudformation validate-template --template-body file://templates/core.yaml
-      - aws cloudformation validate-template --template-body file://templates/web-tier.yaml 
-      - aws cloudformation validate-template --template-body file://templates/middleware-tier.yaml 
+      - aws cloudformation validate-template --template-body file://templates/web-tier.yaml
+      - aws cloudformation validate-template --template-body file://templates/middleware-tier.yaml
       - aws cloudformation validate-template --template-body file://templates/database-tier.yaml
       - cfn-lint templates/core.yaml
       - cfn-lint templates/web-tier.yaml

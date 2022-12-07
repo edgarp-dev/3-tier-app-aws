@@ -5,7 +5,7 @@ phases:
     commands:
       - ./generate_cf_deploy.sh $ENV
       - cat $CODEBUILD_SRC_DIR/deploy.json
-      
+
 artifacts:
   files:
     - main.yaml
