@@ -9,7 +9,8 @@ Resources:
   WebTierLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
+      VpcId: 
+        Fn::ImportValue: !Sub ${Env}-VpcId
       GroupDescription: "Web Tier Secutiry Group"
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -39,7 +40,8 @@ Resources:
     Properties:
       Port: 80
       Protocol: HTTP
-      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
+      VpcId: 
+        Fn::ImportValue: !Sub ${Env}-VpcId
       Tags:
         - Key: "Name"
           Value: !Sub ${Env}-three-tier-app-web-tier-target-group
@@ -57,7 +59,8 @@ Resources:
   WebInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
+      VpcId: 
+        Fn::ImportValue: !Sub ${Env}-VpcId
       GroupDescription: "Web Instance Security Group"
       SecurityGroupIngress:
         - IpProtocol: tcp

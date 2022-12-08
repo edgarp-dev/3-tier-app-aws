@@ -9,11 +9,13 @@ Resources:
   MiddlewareLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
+      VpcId: 
+        Fn::ImportValue: !Sub ${Env}-VpcId
       GroupDescription: "Middleware Load Balancer Security Group"
       SecurityGroupIngress:
         - IpProtocol: tcp
-          SourceSecurityGroupId: Fn::ImportValue: !Sub ${Env}-WebInstanceSecurityGroupId
+          SourceSecurityGroupId: 
+            Fn::ImportValue: !Sub ${Env}-WebInstanceSecurityGroupId
           FromPort: 80
           ToPort: 80
       Tags:
@@ -39,7 +41,8 @@ Resources:
     Properties:
       Port: 80
       Protocol: HTTP
-      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
+      VpcId: 
+        Fn::ImportValue: !Sub ${Env}-VpcId
       Tags:
         - Key: "Name"
           Value: !Sub ${Env}-three-tier-app-middleware-tier-target-group
@@ -57,7 +60,8 @@ Resources:
   MiddlewareInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
+      VpcId: 
+        Fn::ImportValue: !Sub ${Env}-VpcId
       GroupDescription: "Middleware Instance Secutiry Group"
       SecurityGroupIngress:
         - IpProtocol: tcp
