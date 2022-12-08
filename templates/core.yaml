@@ -199,29 +199,29 @@ Outputs:
   VpcId:
     Value: !Ref Vpc
     Export:
-      Name: VpcId
+      Name: !Sub ${Env}-VpcId
 
   PublicAppSubnet1Id:
     Value: !Ref PublicAppSubnet1
     Export:
-      Name: PublicAppSubnet1Id
+      Name: !Sub ${Env}-PublicAppSubnet1Id
 
   PublicAppSubnet2Id:
     Value: !Ref PublicAppSubnet2
     Export:
-      Name: PublicAppSubnet2Id
+      Name: !Sub ${Env}-PublicAppSubnet2Id
 
   PrivateMiddlewareSubnet1Id:
     Value: !Ref PrivateMiddlewareSubnet1
     Export:
-      Name: PrivateMiddlewareSubnet1Id
+      Name: !Sub ${Env}-PrivateMiddlewareSubnet1Id
 
   PrivateMiddlewareSubnet2Id:
     Value: !Ref PrivateMiddlewareSubnet2
     Export:
-      Name: PrivateMiddlewareSubnet2Id
+      Name: !Sub ${Env}-PrivateMiddlewareSubnet2Id
 
   DatabaseTierSubnetGroupId:
     Value: !Ref DatabaseTierSubnetGroup
     Export:
-      Name: DatabaseTierSubnetGroupId
+      Name: !Sub ${Env}-DatabaseTierSubnetGroupId

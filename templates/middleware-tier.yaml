@@ -9,11 +9,11 @@ Resources:
   MiddlewareLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !ImportValue VpcId
+      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
       GroupDescription: "Middleware Load Balancer Security Group"
       SecurityGroupIngress:
         - IpProtocol: tcp
-          SourceSecurityGroupId: !ImportValue WebInstanceSecurityGroupId
+          SourceSecurityGroupId: Fn::ImportValue: !Sub ${Env}-WebInstanceSecurityGroupId
           FromPort: 80
           ToPort: 80
       Tags:
@@ -28,8 +28,8 @@ Resources:
       SecurityGroups:
         - !Ref MiddlewareLoadBalancerSecurityGroup
       Subnets:
-        - !ImportValue PrivateMiddlewareSubnet1Id
-        - !ImportValue PrivateMiddlewareSubnet2Id
+        - Fn::ImportValue: !Sub ${Env}-PrivateMiddlewareSubnet1Id
+        - Fn::ImportValue: !Sub ${Env}-PrivateMiddlewareSubnet2Id
       Tags:
         - Key: "Name"
           Value: !Sub ${Env}-three-tier-app-middleware-tier-load-balancer
@@ -39,7 +39,7 @@ Resources:
     Properties:
       Port: 80
       Protocol: HTTP
-      VpcId: !ImportValue VpcId
+      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
       Tags:
         - Key: "Name"
           Value: !Sub ${Env}-three-tier-app-middleware-tier-target-group
@@ -57,7 +57,7 @@ Resources:
   MiddlewareInstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      VpcId: !ImportValue VpcId
+      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
       GroupDescription: "Middleware Instance Secutiry Group"
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -99,8 +99,8 @@ Resources:
       MinSize: "1"
       DesiredCapacity: "2"
       VPCZoneIdentifier:
-        - !ImportValue PrivateMiddlewareSubnet1Id
-        - !ImportValue PrivateMiddlewareSubnet2Id
+        - Fn::ImportValue: !Sub ${Env}-PrivateMiddlewareSubnet1Id
+        - Fn::ImportValue: !Sub ${Env}-PrivateMiddlewareSubnet2Id
       LaunchTemplate:
         LaunchTemplateId: !Ref MiddlewareInstanceLaunchTemplate
         Version: "1"
@@ -115,4 +115,4 @@ Outputs:
   MiddlewareInstanceSecurityGroupId:
     Value: !Ref MiddlewareInstanceSecurityGroup
     Export:
-      Name: MiddlewareInstanceSecurityGroupId
+      Name: !Sub ${Env}-MiddlewareInstanceSecurityGroupId

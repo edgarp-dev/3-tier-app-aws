@@ -23,7 +23,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: "Database Tier Security Group"
-      VpcId: !ImportValue VpcId
+      VpcId: Fn::ImportValue: !Sub ${Env}-VpcId
       Tags:
         - Key: "Name"
           Value: !Sub ${Env}-three-tier-app-database-sg
@@ -33,7 +33,7 @@ Resources:
     Properties:
       Engine: aurora-mysql
       EngineMode: serverless
-      DBSubnetGroupName: !ImportValue DatabaseTierSubnetGroupId
+      DBSubnetGroupName: Fn::ImportValue: !Sub ${Env}-DatabaseTierSubnetGroupId
       ScalingConfiguration:
         AutoPause: True
         MaxCapacity: 1
@@ -71,5 +71,5 @@ Resources:
       IpProtocol: tcp
       FromPort: !GetAtt Database.Endpoint.Port
       ToPort: !GetAtt Database.Endpoint.Port
-      SourceSecurityGroupId: !ImportValue MiddlewareInstanceSecurityGroupId
+      SourceSecurityGroupId: Fn::ImportValue: !Sub ${Env}-MiddlewareInstanceSecurityGroupId
       GroupId: !Ref DatabaseSecurityGroup
